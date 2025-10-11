@@ -1,4 +1,5 @@
 use crate::sound::*;
+use crate::sound::GLOBAL_SOUND_PLAYER;
 
 #[derive(Debug)]
 pub enum DashDot{
@@ -40,10 +41,10 @@ impl Sound for DashDot {
     fn play(&self) {
         // Placeholder for actual sound playing logic
         match self {
-            DashDot::Dash => generate_sound(440.0, 200),
-            DashDot::Dot => generate_sound(440.0, 100),
-            DashDot::LetterBreak => generate_break(100),
-            DashDot::WordBreak => generate_break(200),
+            DashDot::Dash => GLOBAL_SOUND_PLAYER.generate_sound(200),
+            DashDot::Dot => GLOBAL_SOUND_PLAYER.generate_sound(100),
+            DashDot::LetterBreak => SoundPlayer::generate_break(100),
+            DashDot::WordBreak => SoundPlayer::generate_break(200),
         }
     }
 }
