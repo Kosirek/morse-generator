@@ -40,11 +40,12 @@ impl DashDot {
 impl Sound for DashDot {
     fn play(&self) {
         // Placeholder for actual sound playing logic
+        let sound_player = GLOBAL_SOUND_PLAYER.lock().unwrap();
         match self {
-            DashDot::Dash => GLOBAL_SOUND_PLAYER.generate_sound(200),
-            DashDot::Dot => GLOBAL_SOUND_PLAYER.generate_sound(100),
-            DashDot::LetterBreak => SoundPlayer::generate_break(100),
-            DashDot::WordBreak => SoundPlayer::generate_break(200),
+            DashDot::Dash => sound_player.generate_sound(sound_player.params.dash_time),
+            DashDot::Dot => sound_player.generate_sound(sound_player.params.dot_time),
+            DashDot::LetterBreak => SoundPlayer::generate_break(sound_player.params.space_time),
+            DashDot::WordBreak => SoundPlayer::generate_break(sound_player.params.long_space_time),
         }
     }
 }

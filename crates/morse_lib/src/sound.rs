@@ -1,29 +1,43 @@
 use rodio::{OutputStreamBuilder, Sink, source::{SineWave, Source}, OutputStream};
 use std::time::Duration;
 use once_cell::sync::Lazy;
+use std::sync::Mutex;
 
  pub struct SoundPlayer {
     _stream_handle: OutputStream,
     sink: Sink,
-    frequency: f32,
-//     dot_time: u64,
-//     dash_time_multiplier: f32,
-//     space_time_multiplier: f32,
-//     long_space_time_multiplier: f32,
+    pub(crate) params: SoundParams,
 }
 
-// nalezy uwzglednic mozliwosc zmiany parametrow odtwarzania dzwiekow - czestotliwosc, czas trwania kropki, kreski, przerwy miedzy literami i slowami
-// singleton powinien przechowywac OutputStream i Sink (wlasciwie to do daleszego dzialania potrzebny jest tylko Sink, ale OutputStream musi byc zywy tak dlugo jak Sink)
+pub struct SoundParams {
+    pub frequency: f32,
+    pub dot_time: u64,
+    pub dash_time: u64,
+    pub space_time: u64,
+    pub long_space_time: u64,
+}
 
-pub static GLOBAL_SOUND_PLAYER: Lazy<SoundPlayer> = Lazy::new(|| SoundPlayer::new());
+impl SoundParams {
+    pub fn new() -> Self {
+        SoundParams {
+            frequency: 440.0,
+            dot_time: 100,
+            dash_time: 200,
+            space_time: 100,
+            long_space_time: 200,
+        }
+    }
+}
+
+pub static GLOBAL_SOUND_PLAYER: Lazy<Mutex<SoundPlayer>> = Lazy::new(|| Mutex::new(SoundPlayer::new()));
 
 impl SoundPlayer {
     pub fn generate_sound(&self, duration_ms: u64) {
         let duration = Duration::from_millis(duration_ms);
-        let source = SineWave::new(self.frequency).take_duration(duration);
+        let source = SineWave::new(self.params.frequency).take_duration(duration);
 
-        GLOBAL_SOUND_PLAYER.sink.append(source);
-        GLOBAL_SOUND_PLAYER.sink.sleep_until_end();
+        self.sink.append(source);
+        self.sink.sleep_until_end();
     }
 
     pub fn generate_break(duration_ms: u64) {
@@ -36,13 +50,14 @@ impl SoundPlayer {
         SoundPlayer {
             _stream_handle: stream_handle,
             sink,
-            frequency: 440.0,
+            params: SoundParams::new(),
         }
     }
 
-    pub fn set_frequency(&mut self, frequency: f32) {
-        self.frequency = frequency;
+    pub fn update_params(&mut self, new_params: SoundParams) {
+        self.params = new_params;
     }
+
 }
 
 pub trait Sound {
